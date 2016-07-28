@@ -52,8 +52,10 @@ public:
 	    std::string add_path_cmd = std::string("addpath('") + gadgetron_matlab_path + std::string("');");
             // Gadgetron matlab scripts
 	    engEvalString(engine_, add_path_cmd.c_str());
+
+		add_path_cmd = std::string("addpath('") + get_gadgetron_home() + "/share/ismrmrd/matlab');";
             // ISMRMRD matlab library
-            engEvalString(engine_, "addpath(fullfile(getenv('ISMRMRD_HOME'), '/share/ismrmrd/matlab'));");
+		engEvalString(engine_, add_path_cmd.c_str());
 
 	    GDEBUG("%s", matlab_buffer_);
         }
