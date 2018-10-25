@@ -32,36 +32,6 @@ class MatlabBufferGadget:
     public Gadget1<IsmrmrdReconData >
 {
 public:
-    MatlabBufferGadget(): Gadget1<IsmrmrdReconData >()
-    {
-        // Open the Matlab Engine on the current host
-        GDEBUG("Starting MATLAB engine\n");
-        if (!(engine_ = engOpen("matlab -nodesktop -nosplash"))) {
-            // TODO: error checking!
-            GDEBUG("Can't start MATLAB engine\n");
-        } else {
-            // Add ISMRMRD Java bindings jar to Matlab's path
-            // TODO: this should be in user's Matlab path NOT HERE
-
-            // Prepare a buffer for collecting Matlab's output
-            char matlab_buffer_[2049] = "\0";
-            engOutputBuffer(engine_, matlab_buffer_, 2048);
-
-	    // Add the necessary paths to the matlab environment
-	    // Java matlab command server
-	    std::string gadgetron_matlab_path = get_gadgetron_home() + "/share/gadgetron/matlab";
-	    std::string add_path_cmd = std::string("addpath('") + gadgetron_matlab_path + std::string("');");
-            // Gadgetron matlab scripts
-	    engEvalString(engine_, add_path_cmd.c_str());
-
-		add_path_cmd = std::string("addpath('") + get_gadgetron_home() + "/share/ismrmrd/matlab');";
-            // ISMRMRD matlab library
-		engEvalString(engine_, add_path_cmd.c_str());
-
-	    GDEBUG("%s", matlab_buffer_);
-        }
-    }
-
     ~MatlabBufferGadget()
     {
     std::lock_guard<std::mutex> lock(mutex_);   
@@ -86,7 +56,7 @@ protected:
         debug_mode_  = debug_mode.value();
         path_        = matlab_path.value();
         classname_   = matlab_classname.value();
-	startcmd_    = matlab_startcmd.value();
+		startcmd_    = matlab_startcmd.value();
 
         if (classname_.empty()) {
             GERROR("Missing Matlab Gadget classname in config!");
@@ -101,21 +71,22 @@ protected:
 		if (!(engine_ = engOpen(startcmd_.c_str()))) {
 			// TODO: error checking!
 			GDEBUG("Can't start MATLAB engine\n");
+			return GADGET_FAIL;
 		} else {
             // Prepare a buffer for collecting Matlab's output
             char matlab_buffer_[2049] = "\0";
             engOutputBuffer(engine_, matlab_buffer_, 2048);
 
-	    // Add the necessary paths to the matlab environment
-	    // Java matlab command server
-	    std::string gadgetron_matlab_path = get_gadgetron_home() + "/share/gadgetron/matlab";
-	    std::string add_path_cmd = std::string("addpath('") + gadgetron_matlab_path + std::string("');");
-            // Gadgetron matlab scripts
-	    engEvalString(engine_, add_path_cmd.c_str());
-            // ISMRMRD matlab library
-            engEvalString(engine_, "addpath(fullfile(getenv('ISMRMRD_HOME'), '/share/ismrmrd/matlab'));");
-  
-	    GDEBUG("%s", matlab_buffer_);
+			// Add the necessary paths to the matlab environment
+			// Java matlab command server
+			std::string gadgetron_matlab_path = get_gadgetron_home() + "/share/gadgetron/matlab";
+			std::string add_path_cmd = std::string("addpath('") + gadgetron_matlab_path + std::string("');");
+				// Gadgetron matlab scripts
+			engEvalString(engine_, add_path_cmd.c_str());
+			// ISMRMRD matlab library
+			engEvalString(engine_, "addpath(fullfile(getenv('ISMRMRD_HOME'), '/share/ismrmrd/matlab'));");
+	
+			GDEBUG("%s", matlab_buffer_);
         }
 
 
@@ -147,7 +118,7 @@ protected:
             return GADGET_FAIL;
         }
 
-	mxDestroyArray(xmlstring);
+		mxDestroyArray(xmlstring);
         return GADGET_OK;
     }
 
